@@ -1,0 +1,19 @@
+# Kilosort / experiment folders
+20260210_kilosort_results/
+20260302/
+20260302_kilosort_results/
+20260303/
+20260303_kilosort_results/
+20260313_kilosort_results/
+20260703_raw data_20260316/
+test_kilosort_results/
+plots/
+
+# Raw data
+rawData/
+
+# Documents / archives
+*.pptx
+*.pdf
+*.zip
+*.log
