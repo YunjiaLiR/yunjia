@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from scipy.signal import butter, filtfilt
 
-binary_file = '20260302_data.bin'
+binary_file = '20260804_data.bin'
 fs = 30000          
 n_channels = 128    
 dtype = 'int16'     
@@ -14,7 +14,7 @@ bit_to_uv = 0.25   # blackrock
 
 # DATA LOADING
 print("Loading data...")
-folder_path = '20260302'
+folder_path = '20260804'
 
 spike_times = np.load(os.path.join(folder_path, 'spike_times.npy')).flatten()
 spike_clusters = np.load(os.path.join(folder_path, 'spike_clusters.npy')).flatten()
