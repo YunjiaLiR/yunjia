@@ -6,8 +6,8 @@ import numpy as np
 import os
 
 # 1. Define your file paths
-binary_file_path = r"F:/YST/yunjia/20260804_data.bin"
-phy_dir = r"F:\YST\yunjia\20260804"
+binary_file_path = r"F:/YST/yunjia/20260303_data.bin"
+phy_dir = r"F:\YST\yunjia\20260303"
 
 # 2. Load the curated Phy sorting results FIRST to get channel info
 print("Loading Phy curation results...")
@@ -46,33 +46,20 @@ analyzer = si.create_sorting_analyzer(
 )
 
 # 6. Compute dependencies (ADDED "spike_amplitudes" here!)
+print("Extracting waveforms and dependencies (this might take a few minutes)...")
 analyzer.compute("random_spikes", method="uniform", max_spikes_per_unit=500)
 analyzer.compute("waveforms", ms_before=1.0, ms_after=2.0)
 analyzer.compute("templates", operators=["average", "median"])
 analyzer.compute("spike_amplitudes") 
 
+# 7. Compute your chosen metrics
 print("Computing quality metrics...")
 metrics_list = ["isi_violation", "amplitude_cutoff", "presence_ratio", "amplitude_median"]
 metrics = qm.compute_quality_metrics(analyzer, metric_names=metrics_list)
 
-from spikeinterface.core import get_template_extremum_amplitude
-
-template_amps = get_template_extremum_amplitude(
-    analyzer,
-    peak_sign="neg",
-    abs_value=True
-)
-
-for unit_id in [77, 168, 180]:
-    print(
-        f"Unit {unit_id} | "
-        f"amplitude_median = {abs(metrics.loc[unit_id, 'amplitude_median']):.2f} uV | "
-        f"template main-channel amplitude = {template_amps[unit_id]:.2f} uV"
-    )
-
 # Save all metrics to a CSV file
-metrics.to_csv(r"F:\YST\yunjia\20260804\all_quality_metrics.csv")
-print("Metrics saved to F:\\YST\\yunjia\\20260804\\all_quality_metrics.csv")
+metrics.to_csv(r"F:\YST\yunjia\20260303\all_quality_metrics.csv")
+print("Metrics saved to F:\\YST\\yunjia\\20260303\\all_quality_metrics.csv")
 
 keep_mask = (
     (metrics["isi_violations_ratio"] < 0.5) &
