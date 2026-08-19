@@ -51,10 +51,40 @@ analyzer.compute("waveforms", ms_before=1.0, ms_after=2.0)
 analyzer.compute("templates", operators=["average", "median"])
 analyzer.compute("spike_amplitudes") 
 
-# 7. Compute your chosen metrics
 print("Computing quality metrics...")
 metrics_list = ["isi_violation", "amplitude_cutoff", "presence_ratio", "amplitude_median"]
 metrics = qm.compute_quality_metrics(analyzer, metric_names=metrics_list)
+
+templates_ext = analyzer.get_extension("templates")
+average_templates = templates_ext.get_data(operator="average")
+
+unit_ids = analyzer.unit_ids
+
+for unit_id in [77, 168, 180]:
+
+    if unit_id not in unit_ids:
+        print(f"Unit {unit_id} not found")
+        continue
+
+    unit_index = np.where(unit_ids == unit_id)[0][0]
+
+    template = average_templates[unit_index]
+
+    channel_index = np.argmax(
+        np.max(np.abs(template), axis=0)
+    )
+
+    waveform = template[:, channel_index]
+
+    template_peak = np.max(np.abs(waveform))
+    si_amp = abs(metrics.loc[unit_id, "amplitude_median"])
+
+    print(
+        f"Unit {unit_id} | "
+        f"SI amplitude_median={si_amp:.2f} uV | "
+        f"SI template peak={template_peak:.2f} uV | "
+        f"SI channel index={channel_index}"
+    )
 
 # Save all metrics to a CSV file
 metrics.to_csv(r"F:\YST\yunjia\20260804\all_quality_metrics.csv")
