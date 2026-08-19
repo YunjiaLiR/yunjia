@@ -20,6 +20,7 @@ spike_times = np.load(os.path.join(folder_path, 'spike_times.npy')).flatten()
 spike_clusters = np.load(os.path.join(folder_path, 'spike_clusters.npy')).flatten()
 cluster_info = pd.read_csv(os.path.join(folder_path, 'cluster_info.tsv'), sep='\t')
 metrics = pd.read_csv(os.path.join(folder_path, 'all_quality_metrics.csv'), index_col=0)
+channel_map = np.load(os.path.join(folder_path, 'channel_map.npy')).flatten()
 
 keep_mask = ((metrics["isi_violations_ratio"] < 0.5) &(metrics["amplitude_cutoff"] < 0.1) &(metrics["presence_ratio"] > 0.8)& (metrics["amplitude_median"].abs() > 15) )#(metrics["amplitude_median"] > 10) 
 
@@ -78,22 +79,23 @@ for cluster_id in good_clusters:
         continue
 
     phy_channel = int(row.iloc[0]['ch'])
-
-    # Use the Phy/Kilosort channel for waveform extraction
-    peak_channel = phy_channel
+    raw_channel = int(channel_map[phy_channel])
+    peak_channel = raw_channel
 
     # Calculate channel spread relative to this canonical channel
     ptp_all = np.ptp(mean_wf, axis=1)
-    max_ptp = ptp_all[peak_channel]
     spread = np.sum(ptp_all > 0.2 * max_ptp)
 
     # Extract waveform from Phy/Kilosort canonical channel
-    mean_trace = mean_wf[peak_channel, :] * bit_to_uv
-    std_trace = std_wf[peak_channel, :] * bit_to_uv
+    max_ptp = ptp_all[raw_channel]
+
+    mean_trace = mean_wf[raw_channel, :] * bit_to_uv
+    std_trace = std_wf[raw_channel, :] * bit_to_uv
             
     extracted_units.append({
         'unit_id': cluster_id,
-        'channel': peak_channel,
+        'phy_channel': phy_channel,
+        'raw_channel': raw_channel,
         'mean': mean_trace,
         'std': std_trace,
         'spread': spread
@@ -149,7 +151,7 @@ for r in range(rows):
             ax.set_ylim(-global_max, global_max)
             ax.set_xlim(0, max(time_ms))
             
-            ax.text(0.0, 1.02, f"Chn #{unit['channel']} | Unit #{unit['unit_id']}", 
+            ax.text(0.0, 1.02, f"Phy Ch #{unit['phy_channel']} | Raw Ch #{unit['raw_channel']} | Unit #{unit['unit_id']}", 
                     transform=ax.transAxes, fontsize=10, va='bottom', ha='left', color='black')
             
             unit_idx += 1
