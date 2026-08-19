@@ -54,36 +54,19 @@ analyzer.compute("spike_amplitudes")
 print("Computing quality metrics...")
 metrics_list = ["isi_violation", "amplitude_cutoff", "presence_ratio", "amplitude_median"]
 metrics = qm.compute_quality_metrics(analyzer, metric_names=metrics_list)
+from spikeinterface.core import get_template_amplitude_on_main_channel
 
-templates_ext = analyzer.get_extension("templates")
-average_templates = templates_ext.get_data(operator="average")
-
-unit_ids = analyzer.unit_ids
+template_amps = get_template_amplitude_on_main_channel(
+    analyzer,
+    abs_value=True,
+    with_dict=True
+)
 
 for unit_id in [77, 168, 180]:
-
-    if unit_id not in unit_ids:
-        print(f"Unit {unit_id} not found")
-        continue
-
-    unit_index = np.where(unit_ids == unit_id)[0][0]
-
-    template = average_templates[unit_index]
-
-    channel_index = np.argmax(
-        np.max(np.abs(template), axis=0)
-    )
-
-    waveform = template[:, channel_index]
-
-    template_peak = np.max(np.abs(waveform))
-    si_amp = abs(metrics.loc[unit_id, "amplitude_median"])
-
     print(
         f"Unit {unit_id} | "
-        f"SI amplitude_median={si_amp:.2f} uV | "
-        f"SI template peak={template_peak:.2f} uV | "
-        f"SI channel index={channel_index}"
+        f"amplitude_median = {abs(metrics.loc[unit_id, 'amplitude_median']):.2f} uV | "
+        f"template main-channel amplitude = {template_amps[unit_id]:.2f} uV"
     )
 
 # Save all metrics to a CSV file
