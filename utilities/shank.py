@@ -1,11 +1,16 @@
-import os
-import numpy as np
+"""Visualize channel geometry exported by Kilosort."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 
 # ==========================================
 # 1. SET YOUR FOLDER PATH
 # ==========================================
-folder_path = '20260804' # Change to your actual Kilosort output folder
+folder_path = '20260303' # Change to your actual Kilosort output folder
 
 # ==========================================
 # 2. LOAD CHANNEL MAP & POSITIONS
@@ -42,41 +47,45 @@ else:
 # ==========================================
 plt.figure(figsize=(8, 10))
 
-unique_shanks = np.unique(shanks)
-colors = plt.cm.get_cmap('tab10', len(unique_shanks)) # Automatically generate enough colors
+    unique_shanks = np.unique(shanks)
+    cmap = plt.colormaps.get_cmap("tab10")
 
-# Scatter plot each shank's channels
-for i, sh in enumerate(unique_shanks):
-    mask = (shanks == sh)
-    plt.scatter(
-        positions[mask, 0], 
-        positions[mask, 1], 
-        color=colors(i), 
-        label=f'Shank {int(sh)}', 
-        s=40, 
-        edgecolor='black', 
-        linewidth=0.5
-    )
+    for index, shank_id in enumerate(unique_shanks):
+        mask = shanks == shank_id
+        ax.scatter(
+            positions[mask, 0],
+            positions[mask, 1],
+            color=cmap(index % 10),
+            label=f"Shank {int(shank_id)}",
+            s=40,
+            edgecolor="black",
+            linewidth=0.5,
+        )
 
-# Add channel numbers as text labels next to the dots for ultimate debugging
-for i, (x, y) in enumerate(positions):
-    ch_id = channel_map[i]
-    plt.text(x + 5, y, str(ch_id), fontsize=7, va='center')
+    for index, (x_coord, y_coord) in enumerate(positions):
+        ax.text(
+            x_coord + 5,
+            y_coord,
+            str(channel_map[index]),
+            fontsize=7,
+            va="center",
+        )
 
-plt.title("Probe Geometry & Shank Map (from Kilosort Data)")
-plt.xlabel("X Position (µm)")
-plt.ylabel("Y Position (µm)")
+    ax.set_title("Probe geometry and channel map")
+    ax.set_xlabel("X position (µm)")
+    ax.set_ylabel("Y position (µm)")
+    ax.axis("equal")
+    ax.grid(True, linestyle="--", alpha=0.4)
+    ax.legend(title="Detected shanks", loc="upper right")
+    fig.tight_layout()
 
-# Setting axis to 'equal' is CRITICAL so the probe doesn't look stretched/squished
-plt.axis('equal') 
-plt.legend(title="Detected Shanks", loc="upper right")
-plt.grid(True, linestyle='--', alpha=0.4)
+    output = args.save or (folder / "probe_geometry_diagnostic.png")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output, dpi=300)
+    plt.show()
 
-plt.tight_layout()
+    print(f"Saved diagnostic map to: {output}")
 
-# Save the diagnostic plot
-output_image = os.path.join(folder_path, "probe_geometry_diagnostic.png")
-plt.savefig(output_image, dpi=300)
-plt.show()
 
-print(f"Saved diagnostic map to: {output_image}")
+if __name__ == "__main__":
+    main()
