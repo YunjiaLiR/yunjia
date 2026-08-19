@@ -30,7 +30,7 @@ phy_ch = int(row.iloc[0]["ch"])
 
 print("Unit:", unit_id)
 print("Phy/Kilosort ch:", phy_ch)
-print("Mapped raw channel:", channel_map[phy_ch])
+print("Mapped    channel:", channel_map[phy_ch])
 
 for unit_id in [79, 133]:
     row = cluster_info.loc[
