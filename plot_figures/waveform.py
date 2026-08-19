@@ -70,14 +70,24 @@ for cluster_id in good_clusters:
     mean_wf = np.mean(snippets_filtered, axis=0)
     std_wf = np.std(snippets_filtered, axis=0)
   
-    peak_channel = np.argmax(np.max(np.abs(mean_wf), axis=1))
-    
-    # Calculate Channel Spread
+    # Get canonical best channel from Phy / Kilosort
+    row = cluster_info.loc[cluster_info['cluster_id'] == cluster_id]
+
+    if row.empty:
+        print(f"Warning: Unit {cluster_id} not found in cluster_info.tsv")
+        continue
+
+    phy_channel = int(row.iloc[0]['ch'])
+
+    # Use the Phy/Kilosort channel for waveform extraction
+    peak_channel = phy_channel
+
+    # Calculate channel spread relative to this canonical channel
     ptp_all = np.ptp(mean_wf, axis=1)
     max_ptp = ptp_all[peak_channel]
     spread = np.sum(ptp_all > 0.2 * max_ptp)
 
-    # Extract ONLY the peak channel's mean and std traces
+    # Extract waveform from Phy/Kilosort canonical channel
     mean_trace = mean_wf[peak_channel, :] * bit_to_uv
     std_trace = std_wf[peak_channel, :] * bit_to_uv
             
