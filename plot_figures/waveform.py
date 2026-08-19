@@ -67,35 +67,47 @@ for cluster_id in good_clusters:
         continue
         
     snippets = np.array(snippets)
-    snippets_filtered = filtfilt(b, a, snippets, axis=-1)
-    mean_wf = np.mean(snippets_filtered, axis=0)
-    std_wf = np.std(snippets_filtered, axis=0)
-  
-    # Get canonical best channel from Phy / Kilosort
-    row = cluster_info.loc[cluster_info['cluster_id'] == cluster_id]
+
+    # remove local baseline
+    baseline = np.mean(snippets[:, :, :10], axis=2, keepdims=True)
+    snippets = snippets - baseline
+
+    mean_wf = np.mean(snippets, axis=0)
+    std_wf = np.std(snippets, axis=0)
+
+    row = cluster_info.loc[
+        cluster_info['cluster_id'] == cluster_id
+    ]
 
     if row.empty:
-        print(f"Warning: Unit {cluster_id} not found in cluster_info.tsv")
+        print(f"Warning: Unit {cluster_id} not found")
         continue
 
     phy_channel = int(row.iloc[0]['ch'])
-    raw_channel = int(channel_map[phy_channel])
-    peak_channel = raw_channel
 
-    # Calculate channel spread relative to this canonical channel
+    # For now use cluster_info channel directly
+    raw_channel = phy_channel
+
     ptp_all = np.ptp(mean_wf, axis=1)
-    spread = np.sum(ptp_all > 0.2 * max_ptp)
-
-    # Extract waveform from Phy/Kilosort canonical channel
     max_ptp = ptp_all[raw_channel]
+    spread = np.sum(ptp_all > 0.2 * max_ptp)
 
     mean_trace = mean_wf[raw_channel, :] * bit_to_uv
     std_trace = std_wf[raw_channel, :] * bit_to_uv
+
+    si_amp = abs(metrics.loc[cluster_id, "amplitude_median"])
+    plot_peak = np.max(np.abs(mean_trace))
+
+    print(
+        f"Unit {cluster_id} | "
+        f"Ch {raw_channel} | "
+        f"SI median {si_amp:.2f} uV | "
+        f"waveform peak {plot_peak:.2f} uV"
+    )
             
     extracted_units.append({
         'unit_id': cluster_id,
         'phy_channel': phy_channel,
-        'raw_channel': raw_channel,
         'mean': mean_trace,
         'std': std_trace,
         'spread': spread
