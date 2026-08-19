@@ -88,6 +88,21 @@ for cluster_id in good_clusters:
     # For now use cluster_info channel directly
     raw_channel = phy_channel
 
+    # Check amplitude distribution of individual snippets
+    spike_peaks = np.max(
+        np.abs(snippets[:, raw_channel, :]),
+        axis=1
+    ) * bit_to_uv
+
+    print(
+        f"Unit {cluster_id} | "
+        f"Ch {raw_channel} | "
+        f"SI median={abs(metrics.loc[cluster_id, 'amplitude_median']):.2f} uV | "
+        f"snippet median={np.median(spike_peaks):.2f} uV | "
+        f"P95={np.percentile(spike_peaks, 95):.2f} uV | "
+        f"max={np.max(spike_peaks):.2f} uV"
+    )
+
     ptp_all = np.ptp(mean_wf, axis=1)
     max_ptp = ptp_all[raw_channel]
     spread = np.sum(ptp_all > 0.2 * max_ptp)
