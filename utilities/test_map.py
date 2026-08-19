@@ -31,3 +31,17 @@ phy_ch = int(row.iloc[0]["ch"])
 print("Unit:", unit_id)
 print("Phy/Kilosort ch:", phy_ch)
 print("Mapped raw channel:", channel_map[phy_ch])
+
+for unit_id in [79, 133]:
+    row = cluster_info.loc[
+        cluster_info["cluster_id"] == unit_id
+    ]
+
+    print(
+        "Unit", unit_id,
+        "| cluster_info ch =", int(row.iloc[0]["ch"])
+    )
+
+print("channel_map[1] =", channel_map[1])
+print("Does 121 exist in channel_map values?",
+      121 in channel_map)
