@@ -54,12 +54,13 @@ analyzer.compute("spike_amplitudes")
 print("Computing quality metrics...")
 metrics_list = ["isi_violation", "amplitude_cutoff", "presence_ratio", "amplitude_median"]
 metrics = qm.compute_quality_metrics(analyzer, metric_names=metrics_list)
-from spikeinterface.core import get_template_amplitude_on_main_channel
 
-template_amps = get_template_amplitude_on_main_channel(
+from spikeinterface.core import get_template_extremum_amplitude
+
+template_amps = get_template_extremum_amplitude(
     analyzer,
-    abs_value=True,
-    with_dict=True
+    peak_sign="neg",
+    abs_value=True
 )
 
 for unit_id in [77, 168, 180]:
