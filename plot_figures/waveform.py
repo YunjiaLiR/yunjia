@@ -178,7 +178,7 @@ for r in range(rows):
             ax.set_ylim(-global_max, global_max)
             ax.set_xlim(0, max(time_ms))
             
-            ax.text(0.0, 1.02, f"Phy Ch #{unit['phy_channel']} | Raw Ch #{unit['raw_channel']} | Unit #{unit['unit_id']}", 
+            ax.text(0.0, 1.02, f"Phy Ch #{unit['phy_channel']} | Unit #{unit['unit_id']}", 
                     transform=ax.transAxes, fontsize=10, va='bottom', ha='left', color='black')
             
             unit_idx += 1
