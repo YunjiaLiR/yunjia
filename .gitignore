@@ -7,6 +7,7 @@
 20260313_kilosort_results/
 20260703_raw data_20260316/
 test_kilosort_results/
+20260804/
 plots/
 
 # Raw data
@@ -17,3 +18,5 @@ rawData/
 *.pdf
 *.zip
 *.log
+*.bin
+*.ns6

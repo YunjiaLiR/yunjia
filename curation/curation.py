@@ -6,8 +6,8 @@ import numpy as np
 import os
 
 # 1. Define your file paths
-binary_file_path = r"F:/YST/yunjia/20260303_data.bin"
-phy_dir = r"F:\YST\yunjia\20260303"
+binary_file_path = r"F:/YST/yunjia/20260804_data.bin"
+phy_dir = r"F:\YST\yunjia\20260804"
 
 # 2. Load the curated Phy sorting results FIRST to get channel info
 print("Loading Phy curation results...")
@@ -46,7 +46,6 @@ analyzer = si.create_sorting_analyzer(
 )
 
 # 6. Compute dependencies (ADDED "spike_amplitudes" here!)
-print("Extracting waveforms and dependencies (this might take a few minutes)...")
 analyzer.compute("random_spikes", method="uniform", max_spikes_per_unit=500)
 analyzer.compute("waveforms", ms_before=1.0, ms_after=2.0)
 analyzer.compute("templates", operators=["average", "median"])
@@ -58,8 +57,8 @@ metrics_list = ["isi_violation", "amplitude_cutoff", "presence_ratio", "amplitud
 metrics = qm.compute_quality_metrics(analyzer, metric_names=metrics_list)
 
 # Save all metrics to a CSV file
-metrics.to_csv(r"F:\YST\yunjia\20260303\all_quality_metrics.csv")
-print("Metrics saved to F:\\YST\\yunjia\\20260303\\all_quality_metrics.csv")
+metrics.to_csv(r"F:\YST\yunjia\20260804\all_quality_metrics.csv")
+print("Metrics saved to F:\\YST\\yunjia\\20260804\\all_quality_metrics.csv")
 
 keep_mask = (
     (metrics["isi_violations_ratio"] < 0.5) &

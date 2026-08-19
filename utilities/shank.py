@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # ==========================================
 # 1. SET YOUR FOLDER PATH
 # ==========================================
-folder_path = '20260303' # Change to your actual Kilosort output folder
+folder_path = '20260804' # Change to your actual Kilosort output folder
 
 # ==========================================
 # 2. LOAD CHANNEL MAP & POSITIONS
