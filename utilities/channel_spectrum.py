@@ -2,6 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import welch
+from scipy.signal import butter, filtfilt
 
 binary_file = '20260804_data.bin'
 
@@ -72,50 +73,67 @@ for row, ch in enumerate(target_channels):
 
     # Remove DC offset only
     trace = trace - np.mean(trace)
+    # 500–3000 Hz band-pass
+    b_bp, a_bp = butter(
+        3,
+        [500 / (fs / 2), 3000 / (fs / 2)],
+        btype='bandpass'
+    )
 
-    # ======================================
-    # 1. AMPLITUDE SPECTRUM
-    # ======================================
+    trace_bp = filtfilt(
+        b_bp,
+        a_bp,
+        trace
+    )
 
     N = len(trace)
 
-    fft_values = np.fft.rfft(trace)
+    N = len(trace)
+
     fft_freqs = np.fft.rfftfreq(N, d=1/fs)
 
+    # Raw
+    fft_raw = np.fft.rfft(trace)
+    amp_raw = 2.0 * np.abs(fft_raw) / N
+
+    # Band-pass filtered
+    fft_bp = np.fft.rfft(trace_bp)
+    amp_bp = 2.0 * np.abs(fft_bp) / N
+
     # Single-sided amplitude spectrum
-    amplitude = 2.0 * np.abs(fft_values) / N
 
-    mask = (fft_freqs >= 1) & (fft_freqs <= 5000)
+    mask = (fft_freqs >= 0) & (fft_freqs <= 4000)
 
-    ax1 = axes[row, 0]
+    plt.figure(figsize=(8, 5))
 
-    ax1.plot(
+    plt.plot(
         fft_freqs[mask],
-        amplitude[mask],
-        linewidth=1
+        amp_raw[mask],
+        label='Raw',
+        alpha=0.7
     )
 
-    ax1.axvline(
-        500,
-        linestyle='--',
-        linewidth=1
+    plt.plot(
+        fft_freqs[mask],
+        amp_bp[mask],
+        label='500–3000 Hz band-pass',
+        alpha=0.8
     )
 
-    ax1.axvline(
-        3000,
-        linestyle='--',
-        linewidth=1
-    )
+    plt.axvline(500, linestyle='--')
+    plt.axvline(3000, linestyle='--')
 
-    ax1.set_xlim(0, 5000)
+    plt.xlim(0, 4000)
 
-    ax1.set_title(
-        f'Phy Channel {ch} - Amplitude Spectrum'
-    )
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Amplitude (µV)')
+    plt.title(f'Phy Channel {ch}: Before vs After Band-pass')
+    plt.legend()
 
-    ax1.set_xlabel('Frequency (Hz)')
-    ax1.set_ylabel('Amplitude (µV)')
+    plt.tight_layout()
+    plt.show()
 
+   
     # ======================================
     # 2. BAND POWER DISTRIBUTION
     # ======================================
