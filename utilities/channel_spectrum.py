@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import welch
 
-binary_file = '20260302_data.bin'
+binary_file = '20260804_data.bin'
 
 fs = 30000
 n_channels = 128
@@ -18,16 +18,19 @@ start_sec = 10
 duration_sec = 30
 
 # Frequency bands
+
 bands = [
-    (0, 50),
-    (50, 100),
-    (100, 200),
-    (200, 300),
-    (300, 500),
-    (500, 1000),
-    (1000, 2000),
-    (2000, 3000),
-    (3000, 5000)
+    (0, 5),
+    (5, 10),
+    (10, 20),
+    (20, 30),
+    (30, 40),
+    (40, 50),
+    (50, 60),
+    (60, 70),
+    (70, 80),
+    (80, 90),
+    (90, 100)
 ]
 
 # ==========================================
@@ -132,7 +135,7 @@ for row, ch in enumerate(target_channels):
             (freqs < high)
         )
 
-        power = np.trapezoid(
+        power = np.trapz(
             psd[band_mask],
             freqs[band_mask]
         )
