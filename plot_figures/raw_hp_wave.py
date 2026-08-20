@@ -38,7 +38,8 @@ total_records = file_bytes // (n_channels * bytes_per_data_point)
 memmap_data = np.memmap(binary_file, dtype=dtype, mode='r', shape=(total_records, n_channels))
 raw_segment = memmap_data[start_sample:start_sample + n_samples, :].T 
 
-b, a = butter(3, 300 / (fs / 2), btype='high')
+# b, a = butter(3, 300 / (fs / 2), btype='high')
+b, a = butter(3,[500 / (fs / 2), 3000 / (fs / 2)],btype='bandpass')
 highpass_segment = filtfilt(b, a, raw_segment, axis=1)
 
 waveforms_dict = {}

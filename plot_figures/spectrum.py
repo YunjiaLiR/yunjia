@@ -41,7 +41,8 @@ b, a = butter(3, 10 / (fs / 2), btype='high')
 raw_data = filtfilt(b, a, raw_data)
 
 # Highpass filter
-b, a = butter(3, 300 / (fs / 2), btype='high')
+# b, a = butter(3, 300 / (fs / 2), btype='high')
+b, a = butter(3,[500 / (fs / 2), 3000 / (fs / 2)],btype='bandpass')
 hp_data = filtfilt(b, a, raw_data)
 
 t = np.linspace(0, duration, len(raw_data))

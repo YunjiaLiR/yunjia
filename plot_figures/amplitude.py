@@ -14,7 +14,8 @@ n_channels = 128
 dtype = 'int16'     
 bit_to_uv = 0.25   # Blackrock conversion factor
 
-b, a = butter(3, 300 / (fs / 2), btype='high')
+#b, a = butter(3, 300 / (fs / 2), btype='high')
+b, a = butter(3,[500 / (fs / 2), 3000 / (fs / 2)],btype='bandpass')
 waveform_samples = int(0.002 * fs) # 2 ms window
 
 # Master list to hold amplitudes from all neurons across all subjects
