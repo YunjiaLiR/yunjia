@@ -5,10 +5,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt
 
-# ==========================================
-# 1. CONFIGURATION
-# ==========================================
-# Provide a list of all your subject/session folders here
 folder_paths = [
     '20260303','20260302'
 ]
@@ -18,7 +14,6 @@ n_channels = 128
 dtype = 'int16'     
 bit_to_uv = 0.25   # Blackrock conversion factor
 
-# Define high-pass filter (only needs to be defined once)
 b, a = butter(3, 300 / (fs / 2), btype='high')
 waveform_samples = int(0.002 * fs) # 2 ms window
 
@@ -26,14 +21,9 @@ waveform_samples = int(0.002 * fs) # 2 ms window
 all_neuron_amplitudes = []
 total_good_clusters = 0
 
-# ==========================================
-# 2. PROCESS EACH FOLDER
-# ==========================================
 for folder_path in folder_paths:
     print(f"\n--- Processing folder: {folder_path} ---")
     
-    # Assume binary file is named matching the folder (e.g., '20260303_data.bin')
-    # If your binary files are inside the folders, change this to: os.path.join(folder_path, 'data.bin')
     binary_file = f"{folder_path}_data.bin" 
     
     if not os.path.exists(folder_path):
@@ -48,6 +38,7 @@ for folder_path in folder_paths:
         spike_times = np.load(os.path.join(folder_path, 'spike_times.npy')).flatten()
         spike_clusters = np.load(os.path.join(folder_path, 'spike_clusters.npy')).flatten()
         metrics = pd.read_csv(os.path.join(folder_path, 'all_quality_metrics.csv'), index_col=0)
+        cluster_info = pd.read_csv(os.path.join(folder_path, 'cluster_info.tsv'),sep='\t')
     except Exception as e:
         print(f"Error loading metadata in {folder_path}: {e}. Skipping.")
         continue
@@ -104,12 +95,16 @@ for folder_path in folder_paths:
         # Get Peak-to-Peak (PTP) amplitude for all channels
         ptp_all_channels = np.ptp(mean_wf, axis=1)
         
-        # Find the maximum PTP value on the dominant/peak recording channel
-        max_ptp_raw = np.max(ptp_all_channels)
-        
-        # Convert raw int16 values to actual microvolts (µV)
+        row = cluster_info.loc[cluster_info['cluster_id'] == cluster_id]
+
+        if row.empty:
+            print(f"Warning: Unit {cluster_id} not found in cluster_info.tsv")
+            continue
+
+        phy_channel = int(row.iloc[0]['ch'])
+
+        max_ptp_raw = np.ptp(mean_wf[phy_channel, :])
         max_ptp_uv = max_ptp_raw * bit_to_uv
-        
         # Append to master list
         all_neuron_amplitudes.append(max_ptp_uv)
         folder_amplitudes_count += 1

@@ -26,9 +26,6 @@ waveform_samples = int(0.002 * fs) # 2 ms window
 all_neuron_snrs = []
 total_good_clusters = 0
 
-# ==========================================
-# 2. PROCESS EACH FOLDER
-# ==========================================
 for folder_path in folder_paths:
     print(f"\n--- Processing folder: {folder_path} ---")
     
@@ -47,6 +44,7 @@ for folder_path in folder_paths:
         spike_times = np.load(os.path.join(folder_path, 'spike_times.npy')).flatten()
         spike_clusters = np.load(os.path.join(folder_path, 'spike_clusters.npy')).flatten()
         metrics = pd.read_csv(os.path.join(folder_path, 'all_quality_metrics.csv'), index_col=0)
+        cluster_info = pd.read_csv(os.path.join(folder_path, 'cluster_info.tsv'),sep='\t')
     except Exception as e:
         print(f"Error loading metadata in {folder_path}: {e}. Skipping.")
         continue
@@ -99,16 +97,21 @@ for folder_path in folder_paths:
         
         # Calculate the clean mean waveform across channels
         mean_wf = np.mean(snippets_filtered, axis=0)
-        
-        # Identify the dominant peak channel using your script's logic
-        peak_channel = np.argmax(np.max(np.abs(mean_wf), axis=1))
-        
-        # 1. Calculate Signal: Peak-to-Peak (PTP) amplitude on the main channel
-        max_ptp_raw = np.ptp(mean_wf[peak_channel, :])
-        
-        # 2. Calculate Noise: Take a 10-second chunk of raw data from this channel and filter it
+
+        row = cluster_info.loc[cluster_info['cluster_id'] == cluster_id]
+
+        if row.empty:
+            print(f"Warning: Unit {cluster_id} not found in cluster_info.tsv")
+            continue
+
+        phy_channel = int(row.iloc[0]['ch'])
+
+        # Signal on Phy channel
+        max_ptp_raw = np.ptp(mean_wf[phy_channel, :])
+
+        # Noise from the SAME Phy channel
         noise_samples = min(300000, total_samples)
-        raw_noise_chunk = memmap_data[:noise_samples, peak_channel]
+        raw_noise_chunk = memmap_data[:noise_samples, phy_channel]
         filtered_noise_chunk = filtfilt(b, a, raw_noise_chunk)
         
         # Standard deviation of the filtered background trace represents the noise floor

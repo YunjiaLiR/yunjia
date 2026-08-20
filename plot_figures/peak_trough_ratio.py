@@ -5,10 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt
 
-# ==========================================
-# 1. CONFIGURATION
-# ==========================================
-# Provide a list of all your subject/session folders here
+
 folder_paths = [
     '20260303','20260302'
 ]
@@ -17,7 +14,6 @@ fs = 30000
 n_channels = 128    
 dtype = 'int16'     
 
-# Define the high-pass filter (only needs to be defined once)
 b, a = butter(3, 300 / (fs / 2), btype='high')
 waveform_samples = int(0.002 * fs) # 2 ms window
 
@@ -25,9 +21,6 @@ waveform_samples = int(0.002 * fs) # 2 ms window
 all_neuron_ratios = []
 total_good_clusters = 0
 
-# ==========================================
-# 2. PROCESS EACH FOLDER
-# ==========================================
 for folder_path in folder_paths:
     print(f"\n--- Processing folder: {folder_path} ---")
     
@@ -43,9 +36,9 @@ for folder_path in folder_paths:
         continue
 
     try:
-        # Load metadata and spike files
         spike_times = np.load(os.path.join(folder_path, 'spike_times.npy')).flatten()
         spike_clusters = np.load(os.path.join(folder_path, 'spike_clusters.npy')).flatten()
+        cluster_info = pd.read_csv(os.path.join(folder_path, 'cluster_info.tsv'), sep='\t')
         metrics = pd.read_csv(os.path.join(folder_path, 'all_quality_metrics.csv'), index_col=0)
     except Exception as e:
         print(f"Error loading metadata in {folder_path}: {e}. Skipping.")
@@ -100,12 +93,15 @@ for folder_path in folder_paths:
         # Calculate the clean mean waveform across channels
         mean_wf = np.mean(snippets_filtered, axis=0)
         
-        # Identify the dominant peak channel using your script's logic
-        peak_channel = np.argmax(np.max(np.abs(mean_wf), axis=1))
-        
-        # Isolate the 1D mean trace on that dominant channel
-        best_trace = mean_wf[peak_channel, :]
-        
+        row = cluster_info.loc[cluster_info['cluster_id'] == cluster_id]
+
+        if row.empty:
+            print(f"Warning: Unit {cluster_id} not found in cluster_info.tsv")
+            continue
+
+        phy_channel = int(row.iloc[0]['ch'])
+
+        best_trace = mean_wf[phy_channel, :]
         # Find the index and value of the negative depolarization trough
         trough_idx = np.argmin(best_trace)
         trough_val = best_trace[trough_idx]

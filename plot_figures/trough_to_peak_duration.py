@@ -5,10 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt
 
-# ==========================================
-# 1. CONFIGURATION & FILE PATHS
-# ==========================================
-# Provide a list of all your subject/session folders here
+
 folder_paths = [
     '20260303','20260302'
     # Add more paths as needed
@@ -26,9 +23,6 @@ waveform_samples = int(0.002 * fs) # 2 ms window
 all_neuron_durations = []
 total_good_clusters = 0
 
-# ==========================================
-# 2. PROCESS EACH FOLDER
-# ==========================================
 for folder_path in folder_paths:
     print(f"\n--- Processing folder: {folder_path} ---")
     
@@ -47,6 +41,7 @@ for folder_path in folder_paths:
         spike_times = np.load(os.path.join(folder_path, 'spike_times.npy')).flatten()
         spike_clusters = np.load(os.path.join(folder_path, 'spike_clusters.npy')).flatten()
         metrics = pd.read_csv(os.path.join(folder_path, 'all_quality_metrics.csv'), index_col=0)
+        cluster_info = pd.read_csv(os.path.join(folder_path, 'cluster_info.tsv'),sep='\t')
     except Exception as e:
         print(f"Error loading metadata in {folder_path}: {e}. Skipping.")
         continue
@@ -100,11 +95,15 @@ for folder_path in folder_paths:
         # Calculate the clean mean waveform across channels
         mean_wf = np.mean(snippets_filtered, axis=0)
         
-        # Identify the dominant peak channel using your script's logic
-        peak_channel = np.argmax(np.max(np.abs(mean_wf), axis=1))
-        
-        # Isolate the 1D mean trace on that dominant channel
-        best_trace = mean_wf[peak_channel, :]
+        row = cluster_info.loc[cluster_info['cluster_id'] == cluster_id]
+
+        if row.empty:
+            print(f"Warning: Unit {cluster_id} not found in cluster_info.tsv")
+            continue
+
+        phy_channel = int(row.iloc[0]['ch'])
+
+        best_trace = mean_wf[phy_channel, :]
         
         # Find the index of the depolarization trough (minimum voltage)
         trough_idx = np.argmin(best_trace)

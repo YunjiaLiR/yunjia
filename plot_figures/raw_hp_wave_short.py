@@ -82,15 +82,21 @@ for cluster in good_clusters:
     snippets_filtered = filtfilt(b_hp, a_hp, snippets, axis=-1)
     mean_wf = np.mean(snippets_filtered, axis=0)
   
-    peak_channel = np.argmax(np.max(np.abs(mean_wf), axis=1))
-    
-    if peak_channel not in selected_channels or peak_channel in exclude_channels:
+    row = cluster_info.loc[cluster_info['cluster_id'] == cluster]
+
+    if row.empty:
+        print(f"Warning: Unit {cluster} not found in cluster_info.tsv")
         continue
-        
+
+    phy_channel = int(row.iloc[0]['ch'])
+
+    if phy_channel not in selected_channels or phy_channel in exclude_channels:
+        continue
+
     waveforms_dict[cluster] = {
-        'channel': peak_channel,
-        'mean': mean_wf[peak_channel, :],
-    }
+        'channel': phy_channel,
+        'mean': mean_wf[phy_channel, :],
+}
 
 # --- PLOTTING ---
 fig = plt.figure(figsize=(10, 12))
