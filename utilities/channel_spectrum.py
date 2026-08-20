@@ -104,34 +104,31 @@ for row, ch in enumerate(target_channels):
 
     mask = (fft_freqs >= 0) & (fft_freqs <= 4000)
 
-    plt.figure(figsize=(8, 5))
+    ax1 = axes[row, 0]
 
-    plt.plot(
+    ax1.plot(
         fft_freqs[mask],
         amp_raw[mask],
         label='Raw',
         alpha=0.7
     )
 
-    plt.plot(
+    ax1.plot(
         fft_freqs[mask],
         amp_bp[mask],
         label='500–3000 Hz band-pass',
         alpha=0.8
     )
 
-    plt.axvline(500, linestyle='--')
-    plt.axvline(3000, linestyle='--')
+    ax1.axvline(500, linestyle='--')
+    ax1.axvline(3000, linestyle='--')
 
-    plt.xlim(0, 4000)
+    ax1.set_xlim(0, 4000)
 
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Amplitude (µV)')
-    plt.title(f'Phy Channel {ch}: Before vs After Band-pass')
-    plt.legend()
-
-    plt.tight_layout()
-    plt.show()
+    ax1.set_xlabel('Frequency (Hz)')
+    ax1.set_ylabel('Amplitude (µV)')
+    ax1.set_title(f'Phy Channel {ch}: Before vs After Band-pass')
+    ax1.legend()
 
    
     # ======================================
