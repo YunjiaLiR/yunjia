@@ -19,7 +19,8 @@ dtype = 'int16'
 bit_to_uv = 0.25   # Blackrock conversion factor (optional for SNR, but good to keep)
 
 # Define the high-pass filter from your waveform script (only needs to be defined once)
-b, a = butter(3, 300 / (fs / 2), btype='high')
+# b, a = butter(3, 300 / (fs / 2), btype='high')
+b, a = butter(3,[500 / (fs / 2), 3000 / (fs / 2)],btype='bandpass')
 waveform_samples = int(0.002 * fs) # 2 ms window
 
 # Master list to hold SNR values from all neurons across all subjects

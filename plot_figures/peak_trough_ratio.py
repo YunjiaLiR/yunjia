@@ -14,7 +14,8 @@ fs = 30000
 n_channels = 128    
 dtype = 'int16'     
 
-b, a = butter(3, 300 / (fs / 2), btype='high')
+# b, a = butter(3, 300 / (fs / 2), btype='high')
+b, a = butter(3,[500 / (fs / 2), 3000 / (fs / 2)],btype='bandpass')
 waveform_samples = int(0.002 * fs) # 2 ms window
 
 # Master list to hold ratios from all neurons across all subjects

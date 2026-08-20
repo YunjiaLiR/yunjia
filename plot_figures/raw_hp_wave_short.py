@@ -46,7 +46,8 @@ raw_segment = memmap_data[start_sample:start_sample + n_samples, :].T
 
 # --- FILTERING ---
 # 1. Highpass for Spikes & Waveforms (300 Hz)
-b_hp, a_hp = butter(3, 300 / (fs / 2), btype='high')
+#b_hp, a_hp = butter(3, 300 / (fs / 2), btype='high')
+b_hp, a_hp = butter(3,[500 / (fs / 2), 3000 / (fs / 2)],btype='bandpass')
 highpass_segment = filtfilt(b_hp, a_hp, raw_segment, axis=1)
 
 # 2. Highpass for Raw Data (10 Hz)

@@ -32,7 +32,8 @@ total_samples = file_bytes // (n_channels * bytes_per_data_point)
 memmap_data = np.memmap(binary_file, dtype=dtype, mode='r', shape=(total_samples, n_channels))
 
 # High-pass filter 
-b, a = butter(3, 300 / (fs / 2), btype='high')
+# b, a = butter(3, 300 / (fs / 2), btype='high')
+b, a = butter(3,[500 / (fs / 2), 3000 / (fs / 2)],btype='bandpass')
 
 # EXTRACT WAVEFORMS & CALCULATE SPREAD
 print(f"Extracting snippets for {len(good_clusters)} good units...")

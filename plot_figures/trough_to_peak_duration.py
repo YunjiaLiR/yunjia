@@ -16,7 +16,8 @@ n_channels = 128
 dtype = 'int16'     
 
 # Define the high-pass filter from your waveform script (only needs to be defined once)
-b, a = butter(3, 300 / (fs / 2), btype='high')
+# b, a = butter(3, 300 / (fs / 2), btype='high')
+b, a = butter(3,[500 / (fs / 2), 3000 / (fs / 2)],btype='bandpass')
 waveform_samples = int(0.002 * fs) # 2 ms window
 
 # Master list to hold durations from all neurons across all subjects
