@@ -21,7 +21,7 @@ spike_clusters = np.load(os.path.join(folder_path, 'spike_clusters.npy')).flatte
 cluster_info = pd.read_csv(os.path.join(folder_path, 'cluster_info.tsv'), sep='\t')
 metrics = pd.read_csv(os.path.join(folder_path, 'all_quality_metrics.csv'), index_col=0)
 
-keep_mask = ((metrics["isi_violations_ratio"] < 0.5) &(metrics["amplitude_cutoff"] < 0.1) &(metrics["presence_ratio"] > 0.8)& (metrics["amplitude_median"].abs() > 50) )#(metrics["amplitude_median"] > 10) 
+keep_mask = ((metrics["isi_violations_ratio"] < 0.5) &(metrics["amplitude_cutoff"] < 0.1) &(metrics["presence_ratio"] > 0.8)& (metrics["amplitude_median"].abs() > 20) )#(metrics["amplitude_median"] > 10) 
 
 good_clusters = metrics[keep_mask].index.values
 

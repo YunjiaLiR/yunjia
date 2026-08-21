@@ -45,7 +45,7 @@ spike_times_sec = spike_times / fs
 keep_mask = (
     (metrics["isi_violations_ratio"] < 0.5) & 
     (metrics["amplitude_cutoff"] < 0.1) & 
-    (metrics["presence_ratio"] > 0.8)& (metrics["amplitude_median"].abs() > 15)
+    (metrics["presence_ratio"] > 0.8)& (metrics["amplitude_median"].abs() > 20)
 )
 
 original_good_clusters = metrics[keep_mask].index.values
