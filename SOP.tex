@@ -1,0 +1,137 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.7em}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE \textbf{Extracellular Spike Sorting and Curation}}\\[0.5em]
+    {Yunjia Li}
+\end{center}
+
+\section{Overview}
+
+This document describes the signal-processing and curation workflow used for high-channel-count extracellular neural recordings. The aim is to provide a repeatable procedure from the raw recordings to a final
+set of curated single units. Raw recordings, session-specific results, and experimental figures are intentionally not included.
+
+\section{Data Preparation and Initial Checks}
+
+The recordings are sampled at 30~kHz and stored as 16-bit integer data. Before spike sorting, the recording metadata should be checked to confirm the sampling rate, channel count, recording duration, and voltage conversion factor.
+
+Several utility scripts are included in the repository for these checks.
+\texttt{raw\_data\_length.py} is used to verify the recording duration,
+\texttt{plot\_raw\_data.py} is used to inspect representative raw channels, and \texttt{spike\_length.py} can be used to compare the duration of processed spike output with the raw recording. If strong periodic or sinusoidal noise is observed, \texttt{psd.py} and \texttt{channel\_spectrum.py} can be used to inspect the frequency content of the signal.
+
+\section{Channel Quality Control}
+
+Ground and reference channels are removed before spike sorting. In the current 128-channel configuration, channels 31, 32, 64, 65, 97, 98, 127, and 128 are therefore excluded.
+
+Channels with impedance greater than or equal to 1~M$\Omega$, or reported as open-circuit or outside the measurable range of the recording system, are also excluded.
+
+\section{Probe Mapping}
+
+The probe mapping must be checked before spike sorting because acquisition channel numbers, binary-file indices, and physical electrode positions.
+
+The custom probe mapping should be verified using the mapping utilities in the repository, including \texttt{shank.py} and, where appropriate,
+\texttt{test\_map.py}. For downstream analysis, the Kilosort/Phy probe mapping is treated as the canonical channel assignment.
+
+\section{Spike Sorting}
+
+Spike sorting is performed using Kilosort 4. The raw signal is high-pass
+filtered at 300~Hz to isolate extracellular spike activity. Spatial whitening is applied using a local neighbourhood of 32 channels.
+
+Rigid drift correction is used by setting \texttt{nblocks} to 1. The universal threshold (\texttt{Th\_universal}) is set to 9 and the learned threshold (\texttt{Th\_learned}) to 8. Templates are extracted using batches of 60,000 samples, corresponding to 2~s at a sampling frequency of 30~kHz.
+
+After sorting, the Kilosort output should be checked for obvious discontinuities, large unexplained blank/periodic regions, or other signs of data corruption before manual curation.
+
+\section{Manual Curation}
+
+Manual curation is performed in Phy. The main purpose of this step is to correct clusters that have been over-split or under-split during automated sorting.
+
+Clusters showing clearly separated populations in principal-component space may be split. Neighbouring clusters with similar waveforms, spatial locations, and complementary cross-correlograms may be considered for merging.
+
+\section{Quantitative Unit Quality Control}
+
+To reduce the subjectivity of manual curation, al candidate single units are evaluated using objective quality metrics calculated with SpikeInterface.
+
+A unit is retained in the final SUA set only if all of the following criteria are satisfied:
+\begin{align}
+\mathrm{ISI\ violation\ ratio} &< 0.5,\\
+\mathrm{amplitude\ cutoff} &< 0.1,\\
+\mathrm{presence\ ratio} &> 0.8,\\
+|\mathrm{amplitude\_median}| &> 20~\mu\mathrm{V}.
+\end{align}
+
+The \texttt{amplitude\_median} value refers to the median extracellular spike amplitude measured from the recording in physical voltage units. It should not be confused with Kilosort/Phy amplitude variables \texttt{amp} and template scaling \texttt{Amplitude}.
+
+For the current Blackrock setup, the voltage conversion factor is
+0.25~$\mu$V/bit. This value must be changed if a different acquisition system or gain is used.
+
+\section{Electrophysiological Characterisation}
+
+After final unit selection, the following features can be extracted to
+characterise the isolated units:
+
+\begin{itemize}
+    \item spike peak-to-trough amplitude;
+    \item signal-to-noise ratio;
+    \item trough-to-peak duration;
+    \item peak-trough ratio;
+    \item mean firing rate;
+    \item autocorrelogram rise time.
+\end{itemize}
+
+The corresponding scripts are provided in the analysis portion of the repository. Each metric should be interpreted separately from the
+quality-control thresholds used for SUA selection.
+
+\section{Workflow Summary}
+
+\begin{verbatim}
+Raw recording
+      |
+      v
+Recording integrity and signal inspection
+      |
+      v
+Ground/reference and impedance-based channel exclusion
+      |
+      v
+Probe mapping verification
+      |
+      v
+Kilosort 4 spike sorting
+      |
+      v
+Manual curation in Phy
+      |
+      v
+Objective unit-quality filtering
+      |
+      v
+Electrophysiological characterisation
+      |
+      v
+Final curated SUA/MUA output
+\end{verbatim}
+
+\section{References}
+
+\begin{enumerate}
+    \item Kilosort: \url{https://github.com/MouseLand/Kilosort}
+    \item Phy: \url{https://github.com/cortex-lab/phy}
+    \item Phy documentation:
+    \url{https://phy.readthedocs.io/en/latest/clustering/}
+    \item SpikeInterface:
+    \url{https://spikeinterface.readthedocs.io/}
+    \item Wu et al. (2026):
+    \url{https://doi.org/10.1038/s41467-026-71443-7}
+\end{enumerate}
+
+\end{document}

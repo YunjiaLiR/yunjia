@@ -80,6 +80,14 @@ Raw multichannel recording
 └── .gitignore
 ```
 
+## Analysis SOP
+
+A more detailed description of the preprocessing, spike-sorting, manual-curation, and quantitative quality-control workflow is provided in:
+
+- `docs/spike_sorting_sop.tex`
+
+The SOP documents the processing order, channel-exclusion criteria, Kilosort parameters, manual Phy curation, and quantitative SUA selection criteria used in this repository. It is intentionally written without raw data, session-specific results, or experimental figures so that it can be adapted to other recordings.
+
 ## Signal-quality features
 
 The analysis scripts cover several complementary aspects of extracellular recording quality.
@@ -100,7 +108,7 @@ The current post-curation filtering script uses:
 | ISI violations ratio | `< 0.5` | Reject units with excessive refractory-period violations |
 | Amplitude cutoff | `< 0.1` | Limit estimated missing spikes caused by amplitude truncation |
 | Presence ratio | `> 0.8` | Require temporal presence across most of the recording |
-| Median amplitude | `abs(amplitude_median) > 15` | Remove very-low-amplitude units |
+| Median amplitude | `abs(amplitude_median) > 20 µV` | Remove very-low-amplitude units |
 
 These thresholds are analysis choices in the current workflow, not universal standards. They should be justified or re-tuned for other recording systems and experiments.
 
