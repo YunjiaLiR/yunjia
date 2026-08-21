@@ -64,7 +64,7 @@ print("Metrics saved to F:\\YST\\yunjia\\20260303\\all_quality_metrics.csv")
 keep_mask = (
     (metrics["isi_violations_ratio"] < 0.5) &
     (metrics["amplitude_cutoff"] < 0.1) &
-    (metrics["presence_ratio"] > 0.8) & (metrics["amplitude_median"].abs() > 15)
+    (metrics["presence_ratio"] > 0.8) & (metrics["amplitude_median"].abs() > 20)
 )
 high_quality_unit_ids = metrics[keep_mask].index.values
 final_sorting = sorting.select_units(high_quality_unit_ids)

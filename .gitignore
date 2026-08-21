@@ -21,3 +21,4 @@ rawData/
 *.log
 *.bin
 *.ns6
+*.DS_Store
